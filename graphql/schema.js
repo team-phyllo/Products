@@ -1,11 +1,11 @@
 const { buildSchema } = require('graphql');
 
 module.exports = buildSchema(`
-  type Query {
-
+  type RootQuery {
+    getProducts:
   }
 
   schema {
-    query:
+
   }
 `);

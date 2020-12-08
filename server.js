@@ -1,27 +1,70 @@
-const { ApolloServer } = require('apollo-server');
+const express = require('express');
+const { graphqlHTTP } = require('express-graphql');
+const db = require('./database.js');
 
-// Construct a schema, using GraphQL schema language
-var schema = buildSchema(`
-  type Query {
-    hello: String
-  }
-`);
+const app = express();
+app.listen(5000, () => console.log('Server Running'));
 
-// The root provides a resolver function for each API endpoint
-var root = {
-	hello: () => {
-		return 'Hello world!';
-	},
-};
+app.get('/products', (req, res) => {
+	// console.log('success');
+	// res.end('success');
+	db.getProducts(req.query.page, req.query.results)
+		.then((data) => {
+			res.send(data);
+		})
+		.catch((err) => console.log('There was an error getting products:', err));
+});
 
-var app = express();
-app.use(
-	'/graphql',
-	graphqlHTTP({
-		schema: schema,
-		rootValue: root,
-		graphiql: true,
-	})
-);
-app.listen(4000);
-console.log('Running a GraphQL API server at http://localhost:4000/graphql');
+app.get('/products/:products_id', (req, res) => {
+	db.getProduct(req.params.product_id)
+		.then((data) => {
+			res.send(data);
+		})
+		.catch((err) => console.log('There was an error getting products:', err));
+});
+
+//GRAPHQL CODE:
+// const {
+// 	GraphQLSchema,
+// 	GraphQLObjectType,
+// 	GraphQLString,
+// 	GraphQList,
+// 	GraphQLInt,
+// 	GraphQLNonNull,
+// } = require('graphql');
+
+// const ProductType = new GraphQLObjectType({
+// 	name: 'Product',
+// 	description: 'This represents a product.',
+// 	fields: () => ({
+// 		id: { type: GraphQLNonNull(GraphQLInt) },
+// 		name: { type: GraphQLNonNull(GraphQLString) },
+// 		slogan: { type: GraphQLNonNull(GraphQLString) },
+// 		description: { type: GraphQLNonNull(GraphQLString) },
+// 		category: { type: GraphQLNonNull(GraphQLString) },
+// 		default_price: { type: GraphQLInt },
+// 	}),
+// });
+
+// const RootQueryType = new GraphQLObjectType({
+// 	name: 'Query',
+// 	description: 'Root Query',
+// 	fields: () => ({
+// 		products: {
+// 			type: ProductType,
+// 			description: 'List of Products',
+// 		},
+// 	}),
+// });
+
+// const schema = new GraphQLSchema({
+// 	query: new GraphQLObjectType({}),
+// });
+
+// app.use(
+// 	'/graphql',
+// 	graphqlHTTP({
+// 		schema: schema,
+// 		graphiql: true,
+// 	})
+// );
