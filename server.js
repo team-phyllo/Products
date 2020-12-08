@@ -15,13 +15,24 @@ app.get('/products', (req, res) => {
 		.catch((err) => console.log('There was an error getting products:', err));
 });
 
-app.get('/products/:products_id', (req, res) => {
-	db.getProduct(req.params.product_id)
-		.then((data) => {
-			res.send(data);
-		})
-		.catch((err) => console.log('There was an error getting products:', err));
+app.get('/products/:products_id', async (req, res) => {
+	const results = await db.getProduct(req.params.products_id);
+
+	//format the data received
+	let { product, features } = results;
+	let productWithFeatures = {
+		id: product[0].id,
+		name: product[0].name,
+		slogan: product[0].slogan,
+		description: product[0].description,
+		category: product[0].category,
+		default_price: product[0].default_price,
+		features: features,
+	};
+	res.send(productWithFeatures);
 });
+
+// console.log('product with features 1:', productWithFeatures);
 
 //GRAPHQL CODE:
 // const {
