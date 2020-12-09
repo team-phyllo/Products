@@ -8,6 +8,6 @@ RUN npm install
 
 COPY . .
 
-Expose 3002
+EXPOSE 3002
 
 CMD [ "node, "app.mjs"]

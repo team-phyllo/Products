@@ -45,14 +45,27 @@ const getProduct = (productID) => {
 		.catch((err) => console.log('there was an error:', err));
 };
 
-const getStyles = async (productID) => {
-	db.any(`
-  SELECT
-    style_id,
-    name,
-    original_price,
-    default?,
-  `);
+const getStyles = (productID) => {
+	return db
+		.task(async (t) => {
+			const styles = await t.any(
+				`SELECT id, name, original_price, sale_price, default_style::INT as "default?" FROM styles WHERE product_id=$1;`,
+				[productID]
+			);
+			const photos = await t.any(
+				`SELECT thumbnail_url, url FROM features WHERE styleid = $1;`,
+				[productID]
+			);
+			const skus = await t.any(
+				`SELECT id, size, quantity FROM skus WHERE styleid = $1`,
+				[sty]
+			);
+			return { product, features };
+		})
+		.then((data) => {
+			return data;
+		})
+		.catch((err) => console.log('there was an error:', err));
 };
 
 module.exports = { getProducts, getProduct };
