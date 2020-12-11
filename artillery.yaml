@@ -1,0 +1,22 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: Warm up
+    - duration: 120
+      arrivalRate: 5
+      rampTo: 100
+      name: Ramp up load
+    - duration: 600
+      arrivalRate: 100
+      name: Sustained load
+  processor: './dummyDataMaker'
+
+scenarios:
+  - name: 'get a product'
+    flow:
+      - get:
+          url: '/products/'
+          json:
+            productID: '{{ productID }}'

@@ -49,18 +49,19 @@ const getStyles = (productID) => {
 	return db
 		.task(async (t) => {
 			const styles = await t.any(
-				`SELECT id, name, original_price, sale_price, default_style::INT as "default?" FROM styles WHERE product_id=$1;`,
+				`SELECT style_id, name, original_price, sale_price, default_style::INT as "default?" FROM styles WHERE product_id=$1;`,
 				[productID]
 			);
-			const photos = await t.any(
-				`SELECT thumbnail_url, url FROM features WHERE styleid = $1;`,
+			const stylePhotos = await t.any(
+				'SELECT styleid, thumbnail_url, url FROM photos WHERE styleid IN (SELECT style_id FROM styles WHERE product_id=$1);',
 				[productID]
 			);
-			const skus = await t.any(
-				`SELECT id, size, quantity FROM skus WHERE styleid = $1`,
-				[sty]
+
+			const styleSkus = await t.any(
+				`SELECT styleid, id, size, quantity FROM skus WHERE styleid IN (SELECT style_id FROM styles WHERE product_id=$1);`,
+				[productID]
 			);
-			return { product, features };
+			return { styles, stylePhotos, styleSkus };
 		})
 		.then((data) => {
 			return data;
@@ -68,4 +69,16 @@ const getStyles = (productID) => {
 		.catch((err) => console.log('there was an error:', err));
 };
 
-module.exports = { getProducts, getProduct };
+const getRelatedProducts = (productID) => {
+	return db
+		.any(
+			'SELECT related_product_id FROM related WHERE current_product_id=$1;',
+			[productID]
+		)
+		.then((data) => {
+			return data;
+		})
+		.catch((err) => console.log('there was an error:', err));
+};
+
+module.exports = { getProducts, getProduct, getStyles, getRelatedProducts };

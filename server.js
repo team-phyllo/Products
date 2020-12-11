@@ -1,13 +1,12 @@
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
 const db = require('./database.js');
+require('newrelic');
 
 const app = express();
 app.listen(5000, () => console.log('Server Running'));
 
 app.get('/products', (req, res) => {
-	// console.log('success');
-	// res.end('success');
 	db.getProducts(req.query.page, req.query.results)
 		.then((data) => {
 			res.send(data);
@@ -32,7 +31,62 @@ app.get('/products/:products_id', async (req, res) => {
 	res.send(productWithFeatures);
 });
 
-// console.log('product with features 1:', productWithFeatures);
+app.get('/products/:products_id/styles', async (req, res) => {
+	const results = await db.getStyles(req.params.products_id);
+
+	//format the data received
+	let { styles, stylePhotos, styleSkus } = results;
+
+	// console.log('styles:', styles);
+	// console.log('photos:', stylePhotos);
+	// console.log('skus:', styleSkus);
+
+	var productWithPhotosAndSkus = {
+		product_id: req.params.products_id,
+		results: styles,
+	};
+
+	productWithPhotosAndSkus.results.forEach((style) => {
+		// console.log('current style:', style);
+
+		var photos = [];
+		stylePhotos.forEach((photo) => {
+			if (photo.styleid === style.style_id) {
+				photos.push({
+					thumbnail_url: photo.thumbnail_url,
+					url: photo.url,
+				});
+			}
+		});
+		style.photos = photos;
+
+		var skus = {};
+
+		styleSkus.forEach((sku) => {
+			if (sku.styleid === style.style_id) {
+				skus[sku.id] = {
+					quantity: sku.quantity,
+					size: sku.size,
+				};
+			}
+		});
+		style.skus = skus;
+	});
+
+	res.send(productWithPhotosAndSkus);
+});
+
+app.get('/products/:products_id/related', async (req, res) => {
+	const results = await db.getRelatedProducts(req.params.products_id);
+	console.log(results);
+	var relatedProducts = [];
+
+	results.forEach((result) => {
+		console.log(result.related_product_id);
+		relatedProducts.push(result.related_product_id);
+	});
+	res.send(relatedProducts);
+});
 
 //GRAPHQL CODE:
 // const {
