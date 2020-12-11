@@ -20,3 +20,15 @@ scenarios:
           url: '/products/'
           json:
             productID: '{{ productID }}'
+  - name: 'get product styles'
+    flow:
+      - get:
+          url: '/products/'
+          json:
+            productID: '{{ productID }}'
+  - name: 'get related products'
+    flow:
+      - get:
+          url: '/products/'
+          json:
+            productID: '{{ productID }}'

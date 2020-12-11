@@ -1,2 +1,4 @@
 CSVFiles/
 node_modules/
+newrelic.js
+newrelic_agent.log
